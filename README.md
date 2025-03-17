@@ -39,10 +39,6 @@ plasma-news-widget
 3. **Installing:**
    You can install it easily from the KDE Widgets store, or alternative you can execute `plasmapkg2 -i .` in the root directory of the applet.
 
-## Usage
-- Open the application to view the latest news articles.
-- The widget will automatically fetch updates from the configured RSS feed.
-
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
 
