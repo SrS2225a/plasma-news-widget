@@ -10,7 +10,7 @@
         "Description": "View news articles from the Internet",
         "EnabledByDefault": true,
         "Icon": "news-subscribe",
-        "Id": "com.github.SrS2225a.feeds",
+        "Id": "com.SrS2225a.feeds",
         "License": "GPL",
         "Name": "News",
         "KPackageStructure": "Plasma/Applet",
