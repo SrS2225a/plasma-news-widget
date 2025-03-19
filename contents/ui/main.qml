@@ -33,17 +33,13 @@ PlasmoidItem {
     function fetchFeeds() {
         var feedUrls = plasmoid.configuration.feeds.split("\n"); // Read feed URLs from configuration
         NewsFetcher.fetchAllFeeds(feedUrls, function(allFeeds, errorMessage) {
-            if (errorMessage) {
-                errors = errorMessage;
-            } else {
-                // sort title alphabetically
-                feedList = allFeeds.sort(function(a, b) {
-                    return a.title.localeCompare(b.title);
-                });
+            errors = errorMessage;
+            feedList = allFeeds.sort(function(a, b) { // sort title alphabetically
+                return a.title.localeCompare(b.title);
+            });
 
-                if(feedList.length > 0) {
-                    fetchCurrentFeed(currentIndex);
-                }
+            if(feedList.length > 0) {
+                fetchCurrentFeed(currentIndex);
             }
         });
     }
@@ -142,6 +138,7 @@ PlasmoidItem {
     Column {    // News Container
         anchors.fill: parent
         anchors.topMargin: feedTabs.height
+        visible: errors === ""
         spacing: 10
 
         Row {
