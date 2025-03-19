@@ -137,29 +137,15 @@ function fetchNews(rssUrl, callback) {
 
 function fetchAllFeeds(feedUrls, callback) {
     var allFeeds = [];
-    var completedFeeds = 0;
     var errors = [];
+    var remaining = feedUrls.length;
 
-    function checkComplete() {
-        completedFeeds++;
-        if (completedFeeds === feedUrls.length) {
-            if (errors.length > 0) {
-                callback([], errors.join("\n"));
-            } else {
-                console.log("All feeds fetched successfully");
-                callback(allFeeds, "");
-            }
-        }
-    }
+    feedUrls.forEach(rssUrl => {
+        fetchNews(rssUrl, (feedData, errorMessage) => {
+            if (errorMessage) errors.push(`Error fetching ${rssUrl}: ${errorMessage}`);
+            else allFeeds.push(feedData);
 
-    feedUrls.forEach(function (rssUrl) {
-        fetchNews(rssUrl, function(feedData, errorMessage) {
-            if (errorMessage) {
-                errors.push("Error fetching " + rssUrl + ": " + errorMessage);
-            } else {
-                allFeeds.push(feedData);
-            }
-            checkComplete();
+            if (--remaining === 0) callback(allFeeds, errors.length ? errors.join("\n") : "");
         });
     });
 }
