@@ -48,19 +48,31 @@ PlasmoidItem {
         });
     }
 
+    // Function to load a specific feed's news items
+    function fetchCurrentFeed(index) {
+        if (index < feedList.length) {
+            // sort by date - oldest first
+            newsItems = feedList[index].items.sort(function(a, b) {
+                return new Date(a.pubDate) - new Date(b.pubDate);
+            });
+            currentIndex = newsItems.length - 1;
+        }
+    }
+
 
     Component.onCompleted: fetchFeeds();
 
     Row {  // Tab Container
         id: tabContainer
         width: parent.width
+        height: Math.max(feedTabs.implicitHeight, refreshButton.implicitHeight)
         anchors.top: parent.top
         spacing: 5
 
         Flickable {
             id: tabBarFlickable
             width: parent.width - refreshButton.width - 10 
-            height: feedTabs.height
+            height: feedTabs.implicitHeight
             clip: true
             contentWidth: feedTabs.width
             interactive: feedTabs.width > width
@@ -68,8 +80,7 @@ PlasmoidItem {
             TabBar {
                 id: feedTabs
                 width: implicitWidth
-                height: implicitHeight
-                visible: feedList.length > 0
+                height: implicitHeight 
 
                 Repeater {
                     model: feedList
@@ -84,23 +95,14 @@ PlasmoidItem {
         // Refresh Button
         PlasmaComponents.Button {
             id: refreshButton
+            // set colors
+            anchors.right: parent.right
             icon.name: "view-refresh"
-            height: feedTabs.height
+            height: implicitHeight
             onClicked: fetchFeeds()
+            z: 5
         }
     }
-    
-    // Function to load a specific feed's news items
-    function fetchCurrentFeed(index) {
-        if (index < feedList.length) {
-            // sort by date - oldest first
-            newsItems = feedList[index].items.sort(function(a, b) {
-                return new Date(a.pubDate) - new Date(b.pubDate);
-            });
-            currentIndex = newsItems.length - 1;
-        }
-    }
-
 
     Rectangle { // Error Display
         id: errorDisplay
@@ -108,10 +110,11 @@ PlasmoidItem {
         width: parent.width
         height: parent.height
         // slgihtly red background
-        color: "#FFDDDD"
+        color: "#FFCCCC"
         border.color: "#990000"
         border.width: 2
         radius: 8
+        z: -1
 
         Column {
             anchors.centerIn: parent
