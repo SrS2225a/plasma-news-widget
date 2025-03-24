@@ -37,7 +37,7 @@ plasma-news-widget
    Refer to: https://develop.kde.org/docs/plasma/widget/testing/
 
 3. **Installing:**
-   You can install it easily from the KDE Widgets store, or alternative you can execute `plasmapkg2 -i .` in the root directory of the applet.
+   You can install it easily from the KDE Widgets store, or alternative you can execute `kpackagetool6 -i .` in the root directory of the applet.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any suggestions or improvements.
