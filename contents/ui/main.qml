@@ -13,8 +13,8 @@ import org.kde.kquickcontrolsaddons 2.0
 PlasmoidItem {
     id: mainWindow
 
-    readonly property int implicitWidth: Kirigami.Units.gridUnit * 40.5
-    readonly property int implicitHeight: Kirigami.Units.gridUnit * 16.5
+    readonly property int implicitWidth: Kirigami.Units.gridUnit * 40
+    readonly property int implicitHeight: Kirigami.Units.gridUnit * 18
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     
     Plasmoid.icon: "news"
