@@ -13,12 +13,24 @@ function getTextContent(node) {
     return node && node.firstChild ? node.firstChild.nodeValue : "";
 }
 
+// Removes inline tags that could break layout but don't have content
+function cleanDescription(html) {
+    if (!html) return "";
 
-// for whatever reason XML DOM tree currently supported by QML is a reduced subset of the DOM Level 3 Core API,
-// so we have to manually parse the XML document to extract the news items. WTF QML?
+    var allowedTags = ["b", "strong", "i", "em", "u", "a", "p", "br", "ul", "ol", "li", "span", "strike", "s", "del", "sub", "sup", "code", "pre", "blockquote"];
+
+    // Regex to remove disallowed tags but keep content
+    html = html.replace(/<\/?([a-zA-Z0-9]+)(?:\s[^>]*)?>/g, function (match, tagName) {
+        tagName = tagName.toLowerCase();
+        return allowedTags.includes(tagName) ? match : "";
+    });
+
+    return html.trim();
+}
+
 function fetchNews(rssUrl, callback) {
     var xhr = new XMLHttpRequest();
-    xhr.responseType = "document"; // Ensure response is parsed as XML
+    xhr.responseType = "document";
     console.log("Fetching news from " + rssUrl);
     xhr.open("GET", rssUrl);
 
@@ -33,99 +45,71 @@ function fetchNews(rssUrl, callback) {
                 }
 
                 var newsArray = [];
-                var channel = null;
-                var rootChildren = xmlDoc.documentElement.childNodes;
-                
-                // Find the <channel> element in the root's child nodes
-                for (let i = 0; i < rootChildren.length; i++) {
-                    if (rootChildren[i].nodeName === "channel") {
-                        channel = rootChildren[i];
-                        break;
+                var feedTitle = "Unknown Feed";
+                var root = xmlDoc.documentElement;
+
+                if (root.nodeName === "rss") {
+                    // --- RSS Feed ---
+                    var channel = null;
+                    var rootChildren = root.childNodes;
+                    for (let i = 0; i < rootChildren.length; i++) {
+                        if (rootChildren[i].nodeName === "channel") {
+                            channel = rootChildren[i];
+                            break;
+                        }
                     }
-                }
-                
-                if (!channel) {
-                    callback([], "No <channel> element found in RSS feed");
+
+                    if (!channel) {
+                        callback([], "No <channel> element found in RSS feed");
+                        return;
+                    }
+
+                    var titleNode = channel.firstChild;
+                    while (titleNode) {
+                        if (titleNode.nodeName === "title") {
+                            feedTitle = getTextContent(titleNode);
+                            break;
+                        }
+                        titleNode = titleNode.nextSibling;
+                    }
+
+                    var itemNode = channel.firstChild;
+                    while (itemNode) {
+                        if (itemNode.nodeName === "item") {
+                            newsArray.push(parseRssItem(itemNode));
+                        }
+                        itemNode = itemNode.nextSibling;
+                    }
+
+                } else if (root.nodeName === "feed") {
+                    // --- Atom Feed ---
+                    var titleNode = root.firstChild;
+                    while (titleNode) {
+                        if (titleNode.nodeName === "title") {
+                            feedTitle = getTextContent(titleNode);
+                            break;
+                        }
+                        titleNode = titleNode.nextSibling;
+                    }
+
+                    var entryNode = root.firstChild;
+                    while (entryNode) {
+                        if (entryNode.nodeName === "entry") {
+                            newsArray.push(parseAtomEntry(entryNode));
+                        }
+                        entryNode = entryNode.nextSibling;
+                    }
+                } else {
+                    callback([], "Unsupported feed format: " + root.nodeName);
                     return;
                 }
 
-                // Parse <title> to find the feed title
-                var feedTitle = "Unknown Feed";
-                var titleNode = channel.firstChild;
-                while (titleNode) {
-                    if (titleNode.nodeName === "title") {
-                        feedTitle = getTextContent(titleNode);
-                        break;
-                    }
-                    titleNode = titleNode.nextSibling;
-                }
-
-                // Parse <item> elements for the news articles
-                var itemNode = channel.firstChild;
-                while (itemNode) {
-                    if (itemNode.nodeName === "item") {
-                        var title = "No title";
-                        var link = "#";
-                        var description = "No description";
-                        var pubDate = "No date";
-                        var imageUrl = "";
-
-                        // Parse the <item> node and its children
-                        var itemChildren = itemNode.childNodes;
-                        for (let i = 0; i < itemChildren.length; i++) {
-                            var childNode = itemChildren[i];
-
-                            switch (childNode.nodeName) {
-                                case "title":
-                                    title = getTextContent(childNode);
-                                    break;
-                                case "link":
-                                    // if the link is already set for the item, don't overwrite it
-                                    if (link === "#") {
-                                        link = getTextContent(childNode);
-                                    }
-                                    break;
-                                case "description":
-                                    description = getTextContent(childNode);
-                                    break;
-                                case "pubDate":
-                                    pubDate = getTextContent(childNode);
-                                    break;
-                                case "thumbnail":
-                                case "enclosure":
-                                case "content":
-                                    imageUrl = getAttributeValue(childNode, "url");
-                                    break;
-                                case "media:group":
-                                    var mediaChild = childNode.firstChild;
-                                    while (mediaChild) {
-                                        if (mediaChild.nodeName === "media:content") {
-                                            imageUrl = getAttributeValue(mediaChild, "url");
-                                            break;
-                                        }
-                                        mediaChild = mediaChild.nextSibling;
-                                    }
-                                    break;
-                            }
-                        }
-
-                        newsArray.push({
-                            title: title,
-                            link: link,
-                            description: description,
-                            pubDate: pubDate,
-                            imageUrl: imageUrl
-                        });
-                    }
-                    itemNode = itemNode.nextSibling;
-                }
-
-                // Return the fetched feed with title and items
                 if (newsArray.length === 0) {
                     callback([], "No news articles found in the feed.");
                 } else {
                     callback({ url: rssUrl, title: feedTitle, items: newsArray }, "");
                 }
+
             } else {
                 callback([], "Failed to load RSS feed (HTTP Status " + xhr.status + ")");
             }
@@ -133,6 +117,89 @@ function fetchNews(rssUrl, callback) {
     };
 
     xhr.send();
+}
+
+function parseRssItem(itemNode) {
+    var title = "No title";
+    var link = "#";
+    var description = "No description";
+    var pubDate = "No date";
+    var imageUrl = "";
+
+    var children = itemNode.childNodes;
+    for (let i = 0; i < children.length; i++) {
+        var child = children[i];
+        switch (child.nodeName) {
+            case "title":
+                title = getTextContent(child);
+                break;
+            case "link":
+                if (link === "#") link = getTextContent(child);
+                break;
+            case "description":
+                description = cleanDescription(getTextContent(child));
+                break;
+            case "pubDate":
+                pubDate = getTextContent(child);
+                break;
+            case "thumbnail":
+            case "enclosure":
+            case "content":
+                imageUrl = getAttributeValue(child, "url");
+                break;
+            case "group":
+                var mediaChild = child.firstChild;
+                while (mediaChild) {
+                    if (mediaChild.nodeName === "content") {
+                        imageUrl = getAttributeValue(mediaChild, "url");
+                        break;
+                    }
+                    mediaChild = mediaChild.nextSibling;
+                }
+                break;
+        }
+    }
+
+    return { title, link, description, pubDate, imageUrl };
+}
+
+function parseAtomEntry(entryNode) {
+    var title = "No title";
+    var link = "#";
+    var description = "No description";
+    var pubDate = "No date";
+    var imageUrl = "";
+
+    var children = entryNode.childNodes;
+    for (let i = 0; i < children.length; i++) {
+        var child = children[i];
+        switch (child.nodeName) {
+            case "title":
+                title = getTextContent(child);
+                break;
+            case "link":
+                var rel = getAttributeValue(child, "rel");
+                if (rel !== "self" && getAttributeValue(child, "href")) {
+                    link = getAttributeValue(child, "href");
+                }
+                break;
+            case "summary":
+            case "content":
+                description = cleanDescription(getTextContent(child));
+                console.log(description);
+                break;
+            case "updated":
+            case "published":
+                pubDate = getTextContent(child);
+                break;
+            case "thumbnail":
+            case "content":
+                imageUrl = getAttributeValue(child, "url");
+                break;
+        }
+    }
+
+    return { title, link, description, pubDate, imageUrl };
 }
 
 function fetchAllFeeds(feedUrls, callback) {
