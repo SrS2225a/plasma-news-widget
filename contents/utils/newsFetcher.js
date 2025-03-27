@@ -17,7 +17,7 @@ function getTextContent(node) {
 function cleanDescription(html) {
     if (!html) return "";
 
-    var allowedTags = ["b", "strong", "i", "em", "u", "a", "p", "br", "ul", "ol", "li", "span", "strike", "s", "del", "sub", "sup", "code", "pre", "blockquote"];
+    var allowedTags = ["b", "strong", "i", "em", "u", "a", "p", "br", "ul", "ol", "li", "span", "strike", "s", "del", "sub", "sup", "code", "pre", "blockquote", "h1", "h2", "h3", "h4", "h5", "h6"];
 
     // Regex to remove disallowed tags but keep content
     html = html.replace(/<\/?([a-zA-Z0-9]+)(?:\s[^>]*)?>/g, function (match, tagName) {
