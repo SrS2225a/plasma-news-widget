@@ -159,7 +159,7 @@ PlasmoidItem {
             Column {
                 id: newsContent
                 width: newsItems.length > 0 && newsItems[currentIndex].imageUrl !== "" 
-                    ? parent.width * 0.7 : parent.width
+                    ? parent.width * 0.68 : parent.width + 10
                 height: parent.height
                 spacing: 5
 
@@ -176,7 +176,7 @@ PlasmoidItem {
                     id: newsScrollView
                     width: newsContent.width
                     // Set height to the smaller of content height or available space
-                    height: Math.min(contentLabel.implicitHeight, parent.height - newsTitle.height - pubDateLabel.implicitHeight - navigationRow.height - 20) //
+                    height: Math.min(contentLabel.implicitHeight, parent.height - newsTitle.height - pubDateLabel.implicitHeight - navigationRow.height - 20)
                     visible: newsItems.length > 0 && newsItems[currentIndex].description !== ""
 
                     ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
