@@ -1,7 +1,7 @@
 # Plasma News Widget
 
 ## Overview
-The Plasma News Widget is a lightweight plasmoid that fetches and displays news articles from RSS feeds. While designed primarily for news, it supports any valid RSS feed.
+The Plasma News Widget is a lightweight plasmoid that fetches and displays news articles from the internet using RSS feeds. While designed primarily for news, it supports any valid RSS feed.
 
 ## Features
 - Fetches news articles from specified RSS feeds.
