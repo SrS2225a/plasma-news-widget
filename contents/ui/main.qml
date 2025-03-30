@@ -14,7 +14,7 @@ PlasmoidItem {
     id: mainWindow
 
     readonly property int implicitWidth: Kirigami.Units.gridUnit * 40
-    readonly property int implicitHeight: Kirigami.Units.gridUnit * 18
+    readonly property int implicitHeight: Kirigami.Units.gridUnit * 18.5
     Plasmoid.backgroundHints: PlasmaCore.Types.DefaultBackground | PlasmaCore.Types.ConfigurableBackground
     
     Plasmoid.icon: "news"
@@ -91,7 +91,6 @@ PlasmoidItem {
         // Refresh Button
         PlasmaComponents.Button {
             id: refreshButton
-            // set colors
             anchors.right: parent.right
             icon.name: "view-refresh"
             height: implicitHeight
@@ -158,26 +157,42 @@ PlasmoidItem {
 
             // News Text Content
             Column {
+                id: newsContent
                 width: newsItems.length > 0 && newsItems[currentIndex].imageUrl !== "" 
-                    ? parent.width * 0.6 : parent.width
+                    ? parent.width * 0.7 : parent.width
+                height: parent.height
                 spacing: 5
 
                 PlasmaComponents.Label {
+                    id: newsTitle
                     text: newsItems.length > 0 ? newsItems[currentIndex].title : ""
                     font.bold: true
                     font.pointSize: 15
                     wrapMode: Text.Wrap
-                    width: parent.width
+                    width: parent.width - 20
+                }
+
+                ScrollView {
+                    id: newsScrollView
+                    width: newsContent.width
+                    // Set height to the smaller of content height or available space
+                    height: Math.min(contentLabel.implicitHeight, parent.height - newsTitle.height - pubDateLabel.implicitHeight - navigationRow.height - 20) //
+                    visible: newsItems.length > 0 && newsItems[currentIndex].description !== ""
+
+                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+                    ScrollBar.vertical.policy: ScrollBar.AsNeeded
+
+                    PlasmaComponents.Label {
+                        id: contentLabel
+                        text: newsItems.length > 0 ? newsItems[currentIndex].description : ""
+                        wrapMode: Text.Wrap
+                        font.pointSize: 12
+                        width: newsScrollView.width - 20
+                    }
                 }
 
                 PlasmaComponents.Label {
-                    text: newsItems.length > 0 ? newsItems[currentIndex].description : ""
-                    font.pointSize: 12
-                    wrapMode: Text.Wrap
-                    width: parent.width
-                }
-
-                PlasmaComponents.Label {
+                    id: pubDateLabel
                     text: newsItems.length > 0 ? newsItems[currentIndex].pubDate : ""
                     font.italic: true
                     font.pointSize: 10
@@ -187,9 +202,10 @@ PlasmoidItem {
         }
 
         Row {  // Navigation Buttons
+            id: navigationRow
             width: parent.width
             spacing: 10
-            height: parent.height * 0.12
+            height: parent.height * 0.1
             anchors.bottom: parent.bottom 
             visible: errors === ""
 

@@ -186,7 +186,6 @@ function parseAtomEntry(entryNode) {
             case "summary":
             case "content":
                 description = cleanDescription(getTextContent(child));
-                console.log(description);
                 break;
             case "updated":
             case "published":
