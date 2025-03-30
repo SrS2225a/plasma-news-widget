@@ -55,8 +55,8 @@ PlasmoidItem {
         }
     }
 
-
     Component.onCompleted: fetchFeeds();
+    Plasmoid.onUserConfiguringChanged: fetchFeeds();
 
     Row {  // Tab Container
         id: tabContainer
@@ -167,7 +167,7 @@ PlasmoidItem {
                     id: newsTitle
                     text: newsItems.length > 0 ? newsItems[currentIndex].title : ""
                     font.bold: true
-                    font.pointSize: 15
+                    font.pointSize: 15.4
                     wrapMode: Text.Wrap
                     width: parent.width - 20
                 }

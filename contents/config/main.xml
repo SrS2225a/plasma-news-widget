@@ -4,7 +4,6 @@
   <group name="General">
     <entry name="feeds" type="String">
       <default>
-https://www.reddit.com/.rss
 https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml
 https://feeds.bbci.co.uk/news/technology/rss.xml
       </default>
