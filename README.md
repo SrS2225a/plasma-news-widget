@@ -28,7 +28,7 @@ plasma-news-widget
 ## Setup Instructions
 1. **Clone the repository:**
    ```
-   git clone https://github.com/yourusername/plasma-news-widget.git
+   git clone https://github.com/SrS2225a/plasma-news-widget.git
    cd plasma-news-widget
    ```
    Requires:  Plasma >= 6.0
